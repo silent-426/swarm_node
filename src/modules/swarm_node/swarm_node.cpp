@@ -25,7 +25,7 @@ bool Swarm_Node::init()
 
 bool Swarm_Node::takeoff()
 {
-    control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 5);
+    control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 30); // 改为30米高度
     return false;
 }
 
@@ -153,8 +153,8 @@ void Swarm_Node::start_swarm_node()
 
             // 切换且保持: 只有在 formation 已初始化且 time_tick_point2>0 时才可能切换
             bool use_line_formation = false;
-            if (formation_started && time_tick_point2 > 0) {
-                use_line_formation = (elapsed >= time_tick_point2);
+            if (formation_started && time_tick_point4 > 0) {
+                use_line_formation = (elapsed >= time_tick_point4);
             } else {
                 use_line_formation = false; // 未初始化或参数未设置 -> 先保持正方形
             }
@@ -179,46 +179,46 @@ void Swarm_Node::start_swarm_node()
                 if (vehicle_id == 5) { dx = 20.0f;  dy = 0.0f; }
             }
 
-            // 发送期望位置（保持高度偏移 begin_z - 5）
+            // 发送期望位置（高度改为30米）
             control_instance::getInstance()->Control_posxyz(
                 target_x + dx,
                 target_y + dy,
-                begin_z - 5.0f
+                begin_z - 30.0f  // 改为30米高度
             );
         }
     }
 
-    // -------------------- 1号无人机原逻辑保持不变 --------------------
+    // -------------------- 1号无人机轨迹修改为30米边长 --------------------
     if (vehicle_id == 1) {
 
         if ((hrt_absolute_time() - time_tick > 0) &&
             (hrt_absolute_time() - time_tick < time_tick_point1)) {
 
-            control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 5);
+            control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 30); // 改为30米高度
         }
 
         if ((hrt_absolute_time() - time_tick > time_tick_point1) &&
             (hrt_absolute_time() - time_tick < time_tick_point2)) {
 
-            control_instance::getInstance()->Control_posxyz(begin_x + 5, begin_y, begin_z - 5);
+            control_instance::getInstance()->Control_posxyz(begin_x - 30, begin_y, begin_z - 30); // X方向改为30米
         }
 
         if ((hrt_absolute_time() - time_tick > time_tick_point2) &&
             (hrt_absolute_time() - time_tick < time_tick_point3)) {
 
-            control_instance::getInstance()->Control_posxyz(begin_x + 5, begin_y + 5, begin_z - 5);
+            control_instance::getInstance()->Control_posxyz(begin_x - 30, begin_y + 30, begin_z - 30); // Y方向改为30米
         }
 
         if ((hrt_absolute_time() - time_tick > time_tick_point3) &&
             (hrt_absolute_time() - time_tick < time_tick_point4)) {
 
-            control_instance::getInstance()->Control_posxyz(begin_x, begin_y + 5, begin_z - 5);
+            control_instance::getInstance()->Control_posxyz(begin_x, begin_y + 30, begin_z - 30); // X方向回到起点，Y保持30米
         }
 
         if ((hrt_absolute_time() - time_tick > time_tick_point4) &&
             (hrt_absolute_time() - time_tick < time_tick_point5)) {
 
-            control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 5);
+            control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 30); // Y方向也回到起点
         }
 
         if (hrt_absolute_time() - time_tick > time_tick_point5) {
@@ -265,7 +265,7 @@ void Swarm_Node::Run()
         break;
 
     case state::TAKEOFF:
-        if (control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 5)) {
+        if (control_instance::getInstance()->Control_posxyz(begin_x, begin_y, begin_z - 30)) { // 改为30米高度
             STATE = state::CONTROL;
         }
         break;
@@ -346,4 +346,3 @@ extern "C" __EXPORT int swarm_node_main(int argc, char *argv[])
 {
     return Swarm_Node::main(argc, argv);
 }
-
